@@ -1,1 +1,1 @@
-# Persistent stringified character objects 
+## Persistent stringified character objects will be stored in this directory
