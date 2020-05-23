@@ -148,8 +148,10 @@ To begin, type "-open [number of party members]"
 To request a check, type "-roll [name of the check]"
 ---------------------------------------------
 Party Members:
-Once the DM has opened a party, type "-start [Name of your character]"
+Add items to your inventory by typing "-additem [name of your item] + [description]" (WIP)
+Remove items from your inventory (WIP)
 
+Once the DM has opened a party, type "-newchar [Name of your character]"
 Once the DM asks for a roll, submit your roll by typing "-roll [your total for the roll]"`);
       break;
 
@@ -160,7 +162,10 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
 
     case 'send':
       cmds.shift();
-      message.channel.send(`${cmds.reduce((a,b)=>{a=`${a} ${b} `; return a.trim();})}`)
+      message.channel.send(`${cmds.reduce((a,b)=>{a=`${a} ${b} `; return a.trim();})}`);
+      break;
+    // TODO: add items. use message.content. divider is '+'
+    // TODO: remove items. add removeItems method to character class
     }
   }
 });
