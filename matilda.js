@@ -28,6 +28,12 @@ let players = [];
 //   console.log('noice!\n');
 // }
 
+// let as = new Character('test', 123);
+// as.addItem('bow','a bow')
+// as.addItem('bow2','another bow')
+// console.log(as);
+
+
 client.login(token);
 console.log('Matilda got out of bed!');
 
