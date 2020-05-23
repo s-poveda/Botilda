@@ -1,5 +1,5 @@
 class CharacterSheet {
-  constructor (name , userId, strength = 10, dex = 10, constitution = 10, intelligence = 10, wisdom = 10, charisma = 10) {
+  constructor (name = 'unnamed (so edgy)' , userId, strength = 10, dex = 10, constitution = 10, intelligence = 10, wisdom = 10, charisma = 10) {
     this.userId = userId;
     this.name = name;
     this.strength = parseInt(strength);
@@ -19,10 +19,10 @@ class CharacterSheet {
     this.items = { name : [],
     description : [],
     };
-    console.trace('char trace')
-}
+    console.trace('char trace');
+  }
 
-addItem (name, description) {
+  addItem (name, description) {
     this.items.name = [...this.items.name, name];
     this.items.description = [...this.items.description, description];
   }
