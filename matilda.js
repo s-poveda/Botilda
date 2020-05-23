@@ -2,14 +2,6 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const {token} = require('./auth.json');
 const prefix = '-';
-// const BasicChar = class BasicChar{
-//   constructor (tName, tUserId) {
-//     this.name = tName
-//     this.userId = tUserId;
-//     console.trace('basic character trace');
-//   }
-// }
-
 const Character = require('./characters/');
 // const fs = require('fs');
 // const storeData = (data, path) => {
@@ -25,6 +17,7 @@ const Character = require('./characters/');
 //      console.log(data);
 //    })
 //  }
+
 let numberOfPlayers;
 let responses = [];
 let players = [];
@@ -34,10 +27,6 @@ let players = [];
 //  function callback (err) {
 //   console.log('noice!\n');
 // }
-
-
-let as = new Character('sam', 1234);
-console.log(as);
 
 client.login(token);
 console.log('Matilda got out of bed!');
