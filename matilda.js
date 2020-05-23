@@ -41,10 +41,12 @@ function getRoleId (message, roleToFind) {
   const role = message.guild.roles.cache.find(role => {
     return role.name.toLowerCase() == roleToFind.toLowerCase();
   });
+  if (typeof role === 'undefined') return 'no role matches';
   return role.id;
 }
 
 client.on('message', message => {
+
   const discordId = message.author.id;
   if (message.content.startsWith(prefix) ) {
     //takes full message string and makes array with the words
@@ -56,15 +58,15 @@ client.on('message', message => {
           message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the dm')) ) {
             numberOfPlayers = parseInt(cmds[1]);
             console.log(`the party is now of ${numberOfPlayers} of type ${typeof numberOfPlayers}`);
-            message.reply(`The number of players is ${numberOfPlayers}\n <@&${getRoleId(message, 'the party')}> type "-newCharacter [name of your character]" to begin!`);
+            message.reply(`The number of players is ${numberOfPlayers}\n <@&${getRoleId(message, 'the party')}> type "-newcharacter [name of your character]" to begin!`);
         }
         break;
 
-      case 'start':
+      case 'newcharacter':
         if (!players.some((player) => player.userId == discordId) && message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party')) ) {
-          let newPlayer = new Character(cmds[1], discordId)
+          let newPlayer = new Character(cmds[1], discordId);
           players.push(newPlayer);
-          console.log(`<@${discordId}> to the active players`);
+          console.log(`<@${discordId}> added to the active players`);
           console.log(players);
           message.channel.send(`<@${discordId}> you've been added to the active players`);
         } else {
@@ -73,13 +75,19 @@ client.on('message', message => {
         break;
 
       case 'info':
-      let roleToFind = '';
-      for(let i = 1; i < cmds.length; i++) {roleToFind += `${cmds[i]} `;}
-      roleToFind = roleToFind.trim();
-      console.log(roleToFind);
-      console.log(getRoleId(message, roleToFind));
-      console.log(discordId);
-      console.log(players);
+      try {
+        cmds.shift();
+        var roleToFind = cmds.reduce((roleName, word) => {
+          roleName = ` ${roleName} ${word}`;
+          return roleName.trim();
+        });
+        console.log(`"${roleToFind}" ID: ${getRoleId(message, roleToFind)}`);
+      }
+      catch (err){
+        console.log(`no role to find was requested.`);
+      }
+      console.log(`your discord ID: ${discordId}.`);
+      console.log(`players:\n${players}.`);
       players.forEach( player => {
         if (player.userId == discordId) {
           console.log(`info found:`);
@@ -104,16 +112,20 @@ client.on('message', message => {
             let player = players.find((player) => {return player.userId == discordId});
                 player.roll = cmds[1];
                 responses.push(player);
-                console.log(responses);
+                console.log(`Responses: ${responses}\n--------------------End of responses-----------------------`);
           }
         }
 
           if (responses.length >= numberOfPlayers) {
               message.channel.send(`<@&${getRoleId(message, 'the dm')}> all players have submitted their rolls!`);
-              for (let i = 0; i < players.length; i++) {
-                let player = players[i];
-                message.channel.send(`${player.name}  --------- **${player.roll}**`);
-              }
+              // for (let i = 0; i < players.length; i++) {
+              //   let player = players[i];
+              //   message.channel.send(`${player.name}  --------- **${player.roll}**`);
+              // }
+              const fullMessage = players.reduce((fullMessage, player) => {
+                return fullMessage +`${player.name}  --------- **${player.roll}**\n`;
+              },'');
+              message.channel.send(fullMessage);
               responses = [];
           }
 
