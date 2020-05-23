@@ -1,3 +1,5 @@
+const Item = require('./itemClass.js');
+
 class CharacterSheet {
   constructor (name = 'unnamed (so edgy)' , userId, strength = 10, dex = 10, constitution = 10, intelligence = 10, wisdom = 10, charisma = 10) {
     this.userId = userId;
@@ -16,20 +18,17 @@ class CharacterSheet {
     this.wisdomMod = this.mod(this.wisdom);
     this.charismaMod = this.mod(this.charisma);
 
-    this.items = { name : [],
-    description : [],
-    };
+    this.items = [];
     console.trace('char trace');
   }
 
   addItem (name, description) {
-    this.items.name = [...this.items.name, name];
-    this.items.description = [...this.items.description, description];
+    this.items.push(new Item(name, description));
   }
-mod (score) {   // TODO: Take into prototype
-  let modifier;
+  mod (score) {   // TODO: Take into prototype
+    let modifier;
     if (isNaN(score)) return console.log('couldn\'t set Modifiers. NaN error.\n')
-      switch (score) {
+    switch (score) {
         case 1:
           modifier = -5; break;
         case 2:
