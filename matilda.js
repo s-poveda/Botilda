@@ -18,7 +18,7 @@ const Character = require('./characters/');
 //    })
 //  }
 
-let numberOfPlayers;
+let numberOfPlayers = 0;
 let responses = [];
 let players = [];
 
@@ -35,6 +35,14 @@ client.once('ready', () => {
 
   console.log("And she's hard at work!");
 });
+
+console.createCollapsable = (about, content) => {
+  console.groupCollapsed(about);
+  console.log(`${about}:`);
+  console.log(content);
+  console.log(`--------------------End of ${about}-----------------------`);
+  console.groupEnd();
+};
 
 function getRoleId (message, roleToFind) {
   //returns name of the desired ID as a string.
@@ -58,11 +66,11 @@ client.on('message', message => {
           message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the dm')) ) {
             numberOfPlayers = parseInt(cmds[1]);
             console.log(`the party is now of ${numberOfPlayers} of type ${typeof numberOfPlayers}`);
-            message.reply(`The number of players is ${numberOfPlayers}\n <@&${getRoleId(message, 'the party')}> type "-newcharacter [name of your character]" to begin!`);
+            message.reply(`The number of players is ${numberOfPlayers}\n <@&${getRoleId(message, 'the party')}> type "-newhar [name of your character]" to begin!`);
         }
         break;
 
-      case 'newcharacter':
+      case 'newchar':
         if (!players.some((player) => player.userId == discordId) && message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party')) ) {
           let newPlayer = new Character(cmds[1], discordId);
           players.push(newPlayer);
@@ -108,26 +116,27 @@ client.on('message', message => {
           }
         }
         if (message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party')) ) {
-          if (!responses.some((player) => player.userId == discordId) ) {
-            let player = players.find((player) => {return player.userId == discordId});
-                player.roll = cmds[1];
-                responses.push(player);
-                console.log(`Responses: ${responses}\n--------------------End of responses-----------------------`);
-          }
+
+            try {
+              let player = players.find((player) => {return player.userId == discordId});
+              player.roll = cmds[1];
+              responses.push(player);
+              console.createCollapsable(`Responses:`);
+
+              if (responses.length >= numberOfPlayers) {
+                message.channel.send(`<@&${getRoleId(message, 'the dm')}> all players have submitted their rolls!`);
+                const fullMessage = players.reduce((fullMessage, player) => {
+                  return fullMessage +`${player.name}  --------- **${player.roll}**\n`;
+                },'');
+                message.channel.send(fullMessage);
+                responses = [];
+              }
+            }
+            catch (err) {
+              message.channel.send(`<@${message.author.id}> You have not created a character. Please type "-newchar [name of your character]"`);
+            }
         }
 
-          if (responses.length >= numberOfPlayers) {
-              message.channel.send(`<@&${getRoleId(message, 'the dm')}> all players have submitted their rolls!`);
-              // for (let i = 0; i < players.length; i++) {
-              //   let player = players[i];
-              //   message.channel.send(`${player.name}  --------- **${player.roll}**`);
-              // }
-              const fullMessage = players.reduce((fullMessage, player) => {
-                return fullMessage +`${player.name}  --------- **${player.roll}**\n`;
-              },'');
-              message.channel.send(fullMessage);
-              responses = [];
-          }
 
         break;
 
@@ -145,8 +154,13 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
       break;
 
     case 'clear':
-    responses = [];
-    message.channel.send(`Responses have been reset!`);
+      responses = [];
+      message.channel.send(`Responses have been reset!`);
+      break;
+
+    case 'send':
+      cmds.shift();
+      message.channel.send(`${cmds.reduce((a,b)=>{a=`${a} ${b} `; return a.trim();})}`)
     }
   }
 });
