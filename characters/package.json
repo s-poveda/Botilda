@@ -1,0 +1,12 @@
+{
+  "name": "characters",
+  "version": "1.0.0",
+  "description": "Provides template to store character data for D&D",
+  "main": "CharacterClass.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

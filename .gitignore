@@ -1,0 +1,8 @@
+#authentication files
+auth.json
+
+#linter configuration
+.eslintrc.json
+
+#modules
+node_modules/
