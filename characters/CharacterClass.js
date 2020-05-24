@@ -1,7 +1,7 @@
 const Item = require('./itemClass.js');
 
 class CharacterSheet {
-  constructor (name = 'unnamed (so edgy)' , userId, strength = 10, dex = 10, constitution = 10, intelligence = 10, wisdom = 10, charisma = 10) {
+  constructor (name = 'unnamed (so edgy!)' , userId, strength = 10, dex = 10, constitution = 10, intelligence = 10, wisdom = 10, charisma = 10) {
     this.userId = userId;
     this.name = name;
     this.strength = parseInt(strength);
@@ -25,6 +25,9 @@ class CharacterSheet {
   addItem (name, description) {
     this.items.push(new Item(name, description));
   }
+
+
+
   mod (score) {   // TODO: Take into prototype
     let modifier;
     if (isNaN(score)) return console.log('couldn\'t set Modifiers. NaN error.\n')
