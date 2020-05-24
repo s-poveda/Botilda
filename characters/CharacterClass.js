@@ -23,6 +23,7 @@ class CharacterSheet {
   }
 
   addItem (name, description = 'no description.') {
+// IDEA: let nameOfItem = new item; and change properties to cost (number), damage (string), description (string), attunement (boolean)  
     this.items.push(new Item(name, description));
   }
 
