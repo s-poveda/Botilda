@@ -22,7 +22,7 @@ class CharacterSheet {
     console.trace('char trace');
   }
 
-  addItem (name, description) {
+  addItem (name, description = 'no description.') {
     this.items.push(new Item(name, description));
   }
 

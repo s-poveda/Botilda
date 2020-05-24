@@ -167,11 +167,42 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
       break;
 
     case 'send':
+    //makes bot send the message
       cmds.shift();
       message.channel.send(`${cmds.reduce((a,b)=>{a=`${a} ${b} `; return a.trim();})}`);
       break;
-    // TODO: add items. use message.content. divider is '+'
+
+    case 'additem':
+      if (players.some( character => { return character.userId == discordId})) {
+
+        let currentCharacter = players.find( char => {return char.userId == discordId});
+
+        //deletes '-additem' and the space following from the contents
+        message.content = message.content.substring(cmds[0].length + 1);
+        message.channel.send(message.content);
+        let
+      // if (message.channel.type != 'dm') {
+      //   let currentUserID = discordId;
+      //   message.channel.send(`<@${currentUserID}> What is the name of the item? Please type a reply with **only** the name`);
+      // }
+      // else {
+      //   message.channel.send(`What is the name of the item? Please type a reply with the name and description separated by "&"\nlike this: [Long bow & deals 1d6 damage]`);
+      // }
+      // let name = null;
+      // let description = null;
+      // client.on('message', message => {
+      //   if (message.author.id != currentUserID) return;
+      //
+      // });
+
+
+    // TODO: add items. use message.content. divider is '&'
     // TODO: remove items. add removeItems method to character class
+      }
+      else {
+        console.log( message.author);
+        message.channel.send(`no character found. Have you made one using "-newchar [character name]"?`);
+      }
     }
   }
 });
