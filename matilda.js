@@ -71,7 +71,7 @@ client.on('message', message => {
     let currentCharacter = players.find( char => {return char.userId == discordId});
 
     //takes full message string and makes array with the words
-    const cmds = message.content.toLowerCase().substr(1).split(' ');
+    const cmds = message.content.toLowerCase().trim().substr(1).split(' ');
     switch (cmds[0]) {
 
       case 'open':
@@ -81,7 +81,7 @@ client.on('message', message => {
             console.log(`the party is now of ${numberOfPlayers} of type ${typeof numberOfPlayers}`);
             message.reply(`The number of players is ${numberOfPlayers}\n <@&${getRoleId(message, 'the party')}> type "-newhar [name of your character]" to begin!`);
         }
-        break;
+      break;
 
       case 'newchar':
         if (!players.some((player) => player.userId == discordId) && message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party')) ) {
@@ -93,7 +93,7 @@ client.on('message', message => {
         } else {
           message.channel.send(`<@${discordId}> you have been added to the active party already.`);
         }
-        break;
+      break;
 
       case 'info':
       try {
@@ -112,11 +112,11 @@ client.on('message', message => {
           console.log(player);
         }
       });
-        break;
+      break;
 
       case 'roll':
-      //if DM asks for roll but no # of players is not over 0, asks for input
-      //else asks the party to roll
+        //if DM asks for roll but no # of players is not over 0, asks for input
+        //else asks the party to roll
         if (message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the dm')) ) {
           if (!numberOfPlayers > 0) {
             message.channel.send(`There don't appear to be any party members at the moment.\nPlease add them using "-players [number of players]".`)
@@ -147,7 +147,7 @@ client.on('message', message => {
         }
 
 
-        break;
+      break;
 
       case 'help':
       message.channel.send(
@@ -167,15 +167,16 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
     case 'clear':
       responses = [];
       message.channel.send(`Responses have been reset!`);
-      break;
+    break;
 
     case 'send':
     //makes bot send the message
       cmds.shift();
       message.channel.send(`${cmds.reduce((a,b) => {a=`${a} ${b} `; return a.trim(); }) }`);
-      break;
+    break;
 
     case 'additem':
+      if (!cmds[1]) return message.channel.send(`Please give the name followed by `);
 
       if (!currentCharacter) return message.channel.send(`No character found for you. Have you made one using "-newchar [character name]"?`);
 
@@ -185,6 +186,7 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
         //makes array with index 0 (name): anything before separator
         //                 index 1 (description): anything after separator
         let nameAndDesc = message.content.split(separator);
+
 
         if (currentCharacter.items.some( item => {return item.name == nameAndDesc[0]}) ) return message.author.send(`You already have an item with the same name. Please try again with a different name.`)
 
@@ -222,3 +224,5 @@ ${item.description}
     }
   }
 });
+
+// TODO: make helpMessages.js to store messages to use as an imported variable
