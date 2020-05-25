@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const {token} = require('./auth.json');
 const prefix = '-';
+const separator = / & /;
 const Character = require('./characters/');
 // const fs = require('fs');
 // const storeData = (data, path) => {
@@ -44,9 +45,9 @@ client.once('ready', () => {
 
 console.createCollapsable = (about, content) => {
   console.groupCollapsed(about);
-  console.log(`${about}:`);
-  console.log(content);
-  console.log(`--------------------End of ${about}-----------------------`);
+    console.log(`--------------------Start of ${about}-----------------------`);
+    console.log(content);
+    console.log(`--------------------End of ${about}-----------------------`);
   console.groupEnd();
 };
 
@@ -63,6 +64,10 @@ client.on('message', message => {
 
   const discordId = message.author.id;
   if (message.content.startsWith(prefix) ) {
+
+    //if character hasn't been made, returns undefined.
+    let currentCharacter = players.find( char => {return char.userId == discordId});
+
     //takes full message string and makes array with the words
     const cmds = message.content.toLowerCase().substr(1).split(' ');
     switch (cmds[0]) {
@@ -91,10 +96,7 @@ client.on('message', message => {
       case 'info':
       try {
         cmds.shift();
-        var roleToFind = cmds.reduce((roleName, word) => {
-          roleName = ` ${roleName} ${word}`;
-          return roleName.trim();
-        });
+        var roleToFind = cmds.reduce((roleName, word) => { roleName = `${roleName} ${word} `; return roleName.trim(); });
         console.log(`"${roleToFind}" ID: ${getRoleId(message, roleToFind)}`);
       }
       catch (err){
@@ -124,10 +126,9 @@ client.on('message', message => {
         if (message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party')) ) {
 
             try {
-              let player = players.find((player) => {return player.userId == discordId});
-              player.roll = cmds[1];
-              responses.push(player);
-              console.createCollapsable(`Responses:`);
+              currentCharacter.roll = cmds[1];
+              responses.push(currentCharacter);
+              console.createCollapsable(`Responses`, responses);
 
               if (responses.length >= numberOfPlayers) {
                 message.channel.send(`<@&${getRoleId(message, 'the dm')}> all players have submitted their rolls!`);
@@ -169,40 +170,41 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
     case 'send':
     //makes bot send the message
       cmds.shift();
-      message.channel.send(`${cmds.reduce((a,b)=>{a=`${a} ${b} `; return a.trim();})}`);
+      message.channel.send(`${cmds.reduce((a,b) => {a=`${a} ${b} `; return a.trim(); }) }`);
       break;
 
     case 'additem':
+
+    //deletes '-additem' and the space following from the contents of the message
+      message.content = message.content.substring(cmds[0].length + 2);
+
       if (players.some( character => { return character.userId == discordId})) {
 
-        let currentCharacter = players.find( char => {return char.userId == discordId});
+        //makes array with index 0 (name): anything before separator
+        //                 index 1 (description): anything after separator
+        let nameAndDesc = message.content.split(separator);
 
-        //deletes '-additem' and the space following from the contents
-        message.content = message.content.substring(cmds[0].length + 1);
-        message.channel.send(message.content);
-        let
-      // if (message.channel.type != 'dm') {
-      //   let currentUserID = discordId;
-      //   message.channel.send(`<@${currentUserID}> What is the name of the item? Please type a reply with **only** the name`);
-      // }
-      // else {
-      //   message.channel.send(`What is the name of the item? Please type a reply with the name and description separated by "&"\nlike this: [Long bow & deals 1d6 damage]`);
-      // }
-      // let name = null;
-      // let description = null;
-      // client.on('message', message => {
-      //   if (message.author.id != currentUserID) return;
-      //
-      // });
+        nameAndDesc = nameAndDesc.map( phrase => {return phrase.trim();});
+        currentCharacter.addItem(nameAndDesc[0], nameAndDesc[1]);
 
-
-    // TODO: add items. use message.content. divider is '&'
-    // TODO: remove items. add removeItems method to character class
+        console.createCollapsable(`${currentCharacter.name}`, currentCharacter);
+        message.channel.send(`"${nameAndDesc[0]}" has been added to your inventory!`);
       }
       else {
         console.log( message.author);
-        message.channel.send(`no character found. Have you made one using "-newchar [character name]"?`);
+        message.channel.send(`No character found for you. Have you made one using "-newchar [character name]"?`);
       }
+    break;
+
+    case 'inventory':
+      const inventoryResponse = currentCharacter.items.reduce((fullMessage, item) => {
+        return fullMessage +
+`**${item.name}**
+${item.description}
+=============================================\n`},'');
+      message.channel.send(inventoryResponse);
+
+      // TODO: remove items. add removeItems method to character class
     }
   }
 });
