@@ -43,6 +43,8 @@ client.once('ready', () => {
   console.log("And she's hard at work!");
 });
 
+
+//logs to console with a heading and footer
 console.createCollapsable = (about, content) => {
   console.groupCollapsed(about);
     console.log(`--------------------Start of ${about}-----------------------`);
@@ -175,34 +177,46 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
 
     case 'additem':
 
-    //deletes '-additem' and the space following from the contents of the message
-      message.content = message.content.substring(cmds[0].length + 2);
+      if (!currentCharacter) return message.channel.send(`No character found for you. Have you made one using "-newchar [character name]"?`);
 
-      if (players.some( character => { return character.userId == discordId})) {
+        //deletes '-additem' and the space following from the contents of the message
+        message.content = message.content.substring(cmds[0].length + 2);
 
         //makes array with index 0 (name): anything before separator
         //                 index 1 (description): anything after separator
         let nameAndDesc = message.content.split(separator);
+
+        if (currentCharacter.items.some( item => {return item.name == nameAndDesc[0]}) ) return message.author.send(`You already have an item with the same name. Please try again with a different name.`)
 
         nameAndDesc = nameAndDesc.map( phrase => {return phrase.trim();});
         currentCharacter.addItem(nameAndDesc[0], nameAndDesc[1]);
 
         console.createCollapsable(`${currentCharacter.name}`, currentCharacter);
         message.channel.send(`"${nameAndDesc[0]}" has been added to your inventory!`);
-      }
-      else {
-        console.log( message.author);
-        message.channel.send(`No character found for you. Have you made one using "-newchar [character name]"?`);
-      }
     break;
 
     case 'inventory':
+      if (!currentCharacter) return message.channel.send(`<@${discordId}> You have not made a character. Use "-newchar [name of your character]"`);
+      if (currentCharacter.items.length == 0) return message.author.send('There are no items in your inventory.');
+
       const inventoryResponse = currentCharacter.items.reduce((fullMessage, item) => {
         return fullMessage +
 `**${item.name}**
 ${item.description}
 =============================================\n`},'');
-      message.channel.send(inventoryResponse);
+      message.author.dmChannel.send(inventoryResponse);
+    break;
+
+    case 'removeitem':
+      if (!currentCharacter) return message.channel.send(`<@${discordId}> You have not made a character. Use "-newchar [name of your character]" to create one`);
+      if (currentCharacter.items.length == 0) return message.author.send('There are no items in your inventory.');
+      if (!cmds[1]) return message.channel.send('Please provide the name of the item you want to remove.')
+
+      //deletes '-removeitem' and the space following from the contents of the message
+      message.content = message.content.substring(cmds[0].length + 2).trim();
+
+      console.log(currentCharacter.findIndex( item => {return item.name == message.content}) );
+
 
       // TODO: remove items. add removeItems method to character class
     }
