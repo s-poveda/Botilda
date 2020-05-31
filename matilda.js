@@ -1,23 +1,24 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const {token} = require('./auth.json');
-const prefix = '-';
-const separator = / & /;
+const { token } = require('./auth.json');
 const Character = require('./characters/');
-// const fs = require('fs');
-// const storeData = (data, path) => {
-//  try {
-//    fs.writeFileSync(path, JSON.stringify(data))
-//  } catch (err) {
-//    console.error(err)
-//  }
-// }
+const prefix = '-';
+const { noCharacterFoundMessage, helpMessage, newCharacterCreatedMessage, partyOfZeroMessage } = require('./messages.json');
+const itemSeparator = / & /;
+const fs = require('fs');
+
 //const loadData = (path) => {
 //    fs.readFileSync(path, (err, data) => {
 //      if (err) throw err;
 //      console.log(data);
 //    })
 //  }
+
+function loadCharacter (message, name) {
+  const filePath = `./users/${message.author.id}/${name}.json`;
+  if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
+  return JSON.parse(fs.readFileSync(filePath));
+}
 
 let numberOfPlayers = 0;
 let responses = [];
@@ -43,13 +44,40 @@ client.once('ready', () => {
   console.log("And she's hard at work!");
 });
 
+function storeCharacter (characterObject) {
+  const filePath = `./users/${characterObject.userId}`;
+  if (fs.existsSync(filePath)) {
+    fs.open(`${filePath}/${characterObject.name}.json`, 'w', (err, file) => {
+      if (err) throw err;
+      fs.writeFileSync(file, JSON.stringify(characterObject));
+      fs.close( file, err => {
+        if (err) throw err;
+      });
+    });
+  }
+  else {
+    fs.mkdirSync(filePath);
+    fs.open(`${filePath}/${characterObject.name}.json`, 'w', (err, file) => {
+      if (err) throw err;
+      fs.writeFileSync(file, JSON.stringify(characterObject));
+
+      fs.close( file, err => {
+        if (err) throw err;
+      });
+    });
+  }
+}
 
 //logs to console with a heading and footer
-console.createCollapsable = (about, content) => {
-  console.groupCollapsed(about);
-    console.log(`--------------------Start of ${about}-----------------------`);
+console.createCollapsable = (subject, content) => {
+
+  //if content is null or undefined
+  content = content? content:'Nothing found';
+
+  console.groupCollapsed();
+    console.log(`\n--------------------Start of ${subject}-----------------------`);
     console.log(content);
-    console.log(`--------------------End of ${about}-----------------------`);
+    console.log(`--------------------End of ${subject}-----------------------\n`);
   console.groupEnd();
 };
 
@@ -74,12 +102,24 @@ client.on('message', message => {
     const cmds = message.content.toLowerCase().trim().substr(1).split(' ');
     switch (cmds[0]) {
 
-      case 'open':
+      case 'load':
+          currentCharacter = loadCharacter(message, cmds[1]);
+          players.push(currentCharacter);
+          if (currentCharacter) return message.channel.send(`<@${discordId}> ${currentCharacter.name} has been loaded.`);
+        break;
+
+      case 'save':
+        storeCharacter(players.find( player => {return player.userId == discordId}));
+        message.channel.send('Your character has been saved.');
+        break;
+
+      case 'partysize':
+        if (!cmds[1] > 0 || typeof parseInt(cmds[1]) != 'number') return message.channel.send(partyOfZeroMessage);
         if (message.member.roles.cache.some(role=>role.name.toLowerCase() == ('artificer')) ||
           message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the dm')) ) {
             numberOfPlayers = parseInt(cmds[1]);
-            console.log(`the party is now of ${numberOfPlayers} of type ${typeof numberOfPlayers}`);
-            message.reply(`The number of players is ${numberOfPlayers}\n <@&${getRoleId(message, 'the party')}> type "-newhar [name of your character]" to begin!`);
+            console.log(`party size: ${numberOfPlayers}`);
+            message.reply(`The number of players is ${numberOfPlayers}\n <@&${getRoleId(message, 'the party')}> type "-newchar [name of your character]" to begin!`);
         }
       break;
 
@@ -89,7 +129,7 @@ client.on('message', message => {
           players.push(newPlayer);
           console.log(`<@${discordId}> added to the active players`);
           console.log(players);
-          message.channel.send(`<@${discordId}> you've been added to the active players`);
+          message.channel.send(`<@${discordId}> ${newCharacterCreatedMessage}`);
         } else {
           message.channel.send(`<@${discordId}> you have been added to the active party already.`);
         }
@@ -105,13 +145,8 @@ client.on('message', message => {
         console.log(`no role to find was requested.`);
       }
       console.log(`your discord ID: ${discordId}.`);
-      console.log(`players:\n${players}.`);
-      players.forEach( player => {
-        if (player.userId == discordId) {
-          console.log(`info found:`);
-          console.log(player);
-        }
-      });
+      console.createCollapsable('Active Players',players);
+      console.createCollapsable('Your character in Queue',players.find( p => {return p.userId == discordId}));
       break;
 
       case 'roll':
@@ -119,7 +154,7 @@ client.on('message', message => {
         //else asks the party to roll
         if (message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the dm')) ) {
           if (!numberOfPlayers > 0) {
-            message.channel.send(`There don't appear to be any party members at the moment.\nPlease add them using "-players [number of players]".`)
+            message.channel.send(`<@&${getRoleId(message, 'the dm')}> ${partyOfZeroMessage}`)
           } else {
             responses = [];
             message.channel.send(`<@&${getRoleId(message, 'the party')}> Roll for ${cmds[1]}!`);
@@ -150,18 +185,7 @@ client.on('message', message => {
       break;
 
       case 'help':
-      message.channel.send(
-`Dungeon Master:
-To begin, type "-open [number of party members]"
-
-To request a check, type "-roll [name of the check]"
----------------------------------------------
-Party Members:
-Add items to your inventory by typing "-additem [name of your item] + [description]" (WIP)
-Remove items from your inventory (WIP)
-
-Once the DM has opened a party, type "-newchar [Name of your character]"
-Once the DM asks for a roll, submit your roll by typing "-roll [your total for the roll]"`);
+      message.channel.send(helpMessage);
       break;
 
     case 'clear':
@@ -175,38 +199,38 @@ Once the DM asks for a roll, submit your roll by typing "-roll [your total for t
       message.channel.send(`${cmds.reduce((a,b) => {a=`${a} ${b} `; return a.trim(); }) }`);
     break;
 
-    case 'additem':
-      if (!cmds[1]) return message.channel.send(`Please give the name followed by `);
-
-      if (!currentCharacter) return message.channel.send(`No character found for you. Have you made one using "-newchar [character name]"?`);
-
-        //deletes '-additem' and the space following from the contents of the message
-        message.content = message.content.substring(cmds[0].length + 2);
-
-        //makes array with index 0 (name): anything before separator
-        //                 index 1 (description): anything after separator
-        let nameAndDesc = message.content.split(separator);
-
-
-        if (currentCharacter.items.some( item => {return item.name == nameAndDesc[0]}) ) return message.author.send(`You already have an item with the same name. Please try again with a different name.`)
-
-        nameAndDesc = nameAndDesc.map( phrase => {return phrase.trim();});
-        currentCharacter.addItem(nameAndDesc[0], nameAndDesc[1]);
-
-        console.createCollapsable(`${currentCharacter.name}`, currentCharacter);
-        message.channel.send(`"${nameAndDesc[0]}" has been added to your inventory!`);
-    break;
-
     case 'inventory':
-      if (!currentCharacter) return message.channel.send(`<@${discordId}> You have not made a character. Use "-newchar [name of your character]"`);
-      if (currentCharacter.items.length == 0) return message.author.send('There are no items in your inventory.');
+    if (!currentCharacter) return message.channel.send(`<@${discordId}> ${noCharacterFoundMessage}`);
+    if (currentCharacter.items.length == 0) return message.author.send('There are no items in your inventory.');
 
-      const inventoryResponse = currentCharacter.items.reduce((fullMessage, item) => {
-        return fullMessage +
-`**${item.name}**
-${item.description}
-=============================================\n`},'');
-      message.author.dmChannel.send(inventoryResponse);
+    const inventoryResponse = currentCharacter.items.reduce((fullMessage, item) => {
+      return fullMessage +
+      `**${item.name}**
+      ${item.description}
+      =============================================\n`},'');
+      message.author.send(inventoryResponse);
+      break;
+
+    case 'additem':
+    if (!cmds[1]) return message.channel.send(`Please give the name followed by `);
+
+    if (!currentCharacter) return message.channel.send(noCharacterFoundMessage);
+
+    //deletes '-additem' and the space following from the contents of the message
+    message.content = message.content.substring(cmds[0].length + 2);
+
+    //makes array with index 0 (name): anything before separator
+    //                 index 1 (description): anything after separator
+    let nameAndDesc = message.content.split(itemSeparator);
+
+
+    if (currentCharacter.items.some( item => {return item.name == nameAndDesc[0]}) ) return message.author.send(`You already have an item with the same name. Please try again with a different name.`)
+
+    nameAndDesc = nameAndDesc.map( phrase => {return phrase.trim();});
+    currentCharacter.addItem(nameAndDesc[0], nameAndDesc[1]);
+
+    console.createCollapsable(`${currentCharacter.name}`, currentCharacter);
+    message.channel.send(`"${nameAndDesc[0]}" has been added to your inventory!`);
     break;
 
     case 'removeitem':
@@ -214,8 +238,8 @@ ${item.description}
       if (currentCharacter.items.length == 0) return message.author.send('There are no items in your inventory.');
       if (!cmds[1]) return message.channel.send('Please provide the name of the item you want to remove.')
 
-      //deletes '-removeitem' and the space following from the contents of the message
-      message.content = message.content.substring(cmds[0].length + 2).trim();
+      //deletes '-removeitem' and lingering spaces from message content
+      message.content = message.content.substring(cmds[0].length + 1).trim();
 
       console.log(currentCharacter.findIndex( item => {return item.name == message.content}) );
 
@@ -225,4 +249,4 @@ ${item.description}
   }
 });
 
-// TODO: make helpMessages.js to store messages to use as an imported variable
+// TODO: make helpMessages.txt to store messages to use as an imported variable
