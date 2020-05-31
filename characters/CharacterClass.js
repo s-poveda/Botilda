@@ -19,7 +19,6 @@ class CharacterSheet {
     this.charismaMod = this.mod(this.charisma);
 
     this.items = [];
-    console.trace('char trace');
   }
 
   addItem (name, description = 'no description.') {

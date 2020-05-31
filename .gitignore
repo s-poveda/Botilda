@@ -1,5 +1,6 @@
 #authentication files
 auth.json
+users/*
 
 #linter configuration
 .eslintrc.json
