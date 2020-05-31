@@ -1,11 +1,12 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const { token } = require('./auth.json');
-const Character = require('./characters/');
 const prefix = '-';
 const { noCharacterFoundMessage, helpMessage, newCharacterCreatedMessage, partyOfZeroMessage } = require('./messages.json');
 const itemSeparator = / & /;
 const fs = require('fs');
+const Character = require('./characters/');
+Character.prototype = require('./characters/CharacterSheet-proto.js');
 
 //const loadData = (path) => {
 //    fs.readFileSync(path, (err, data) => {
@@ -14,11 +15,6 @@ const fs = require('fs');
 //    })
 //  }
 
-function loadCharacter (message, name) {
-  const filePath = `./users/${message.author.id}/${name}.json`;
-  if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
-  return JSON.parse(fs.readFileSync(filePath));
-}
 
 let numberOfPlayers = 0;
 let responses = [];
@@ -43,6 +39,12 @@ client.once('ready', () => {
 
   console.log("And she's hard at work!");
 });
+
+function loadCharacter (message, name) {
+  const filePath = `./users/${message.author.id}/${name}.json`;
+  if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
+  return JSON.parse(fs.readFileSync(filePath));
+}
 
 function storeCharacter (characterObject) {
   const filePath = `./users/${characterObject.userId}`;
