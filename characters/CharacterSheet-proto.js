@@ -1,4 +1,4 @@
-const Item = require('./itemClass.js')
+const Item = require('./itemClass.js');
 const _prototype = {
   "addItem" : (name, description = 'no description.') => {
     // IDEA: let nameOfItem = new item; and change properties to cost (number), damage (string), description (string), attunement (boolean)
@@ -6,8 +6,8 @@ const _prototype = {
   },
 
   "removeItem" : (name) => {
-  if (!name) return ;
-  this.items.findIndex()
+    if (!name) return ;
+    this.items.findIndex()
   },
 
   "mod" : (score) => {

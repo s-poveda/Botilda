@@ -6,7 +6,7 @@ const { noCharacterFoundMessage, helpMessage, newCharacterCreatedMessage, partyO
 const itemSeparator = / & /;
 const fs = require('fs');
 const Character = require('./characters/');
-Character.prototype = require('./characters/CharacterSheet-proto.js');
+// Character = require('./characters/CharacterSheet-proto.js');
 
 //const loadData = (path) => {
 //    fs.readFileSync(path, (err, data) => {

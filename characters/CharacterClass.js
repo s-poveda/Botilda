@@ -22,7 +22,9 @@ class CharacterSheet {
     this.items = [];
   }
 }
-CharacterSheet.prototype = proto;
+CharacterSheet.prototype.addItem = proto.addItem;
+CharacterSheet.prototype.removeItem = proto.removeItem;
+CharacterSheet.prototype.mod = proto.mod;
 // CharacterSheet.prototype.addItem = (name, description = 'no description.') => {
 //   // IDEA: let nameOfItem = new item; and change properties to cost (number), damage (string), description (string), attunement (boolean)
 //   this.items.push(new Item(name, description));
