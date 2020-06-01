@@ -15,6 +15,7 @@ const fs = require('fs');
 //  }
 
 function loadCharacter (message, name) {
+  if (!name) return undefined;
   const filePath = `./users/${message.author.id}/${name}.json`;
   if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
   return JSON.parse(fs.readFileSync(filePath));
@@ -104,6 +105,7 @@ client.on('message', message => {
 
       case 'load':
           currentCharacter = loadCharacter(message, cmds[1]);
+          if (!currentCharacter) return message.channel.send('Please provide a name.');
           players.push(currentCharacter);
           if (currentCharacter) return message.channel.send(`<@${discordId}> ${currentCharacter.name} has been loaded.`);
         break;
@@ -146,7 +148,7 @@ client.on('message', message => {
       }
       console.log(`your discord ID: ${discordId}.`);
       console.createCollapsable('Active Players',players);
-      console.createCollapsable('Your character in Queue',players.find( p => {return p.userId == discordId}));
+      console.createCollapsable('Your character', currentCharacter);
       break;
 
       case 'roll':
