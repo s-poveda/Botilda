@@ -2,24 +2,13 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const { token } = require('./auth.json');
 const Character = require('./characters/');
+const fs = require('fs');
+const Flatted = require('flatted');
 const prefix = '-';
 const { noCharacterFoundMessage, helpMessage, newCharacterCreatedMessage, partyOfZeroMessage } = require('./messages.json');
 const itemSeparator = / & /;
-const fs = require('fs');
 
-//const loadData = (path) => {
-//    fs.readFileSync(path, (err, data) => {
-//      if (err) throw err;
-//      console.log(data);
-//    })
-//  }
 
-function loadCharacter (message, name) {
-  if (!name) return undefined;
-  const filePath = `./users/${message.author.id}/${name}.json`;
-  if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
-  return JSON.parse(fs.readFileSync(filePath));
-}
 
 let numberOfPlayers = 0;
 let responses = [];
@@ -31,10 +20,14 @@ let players = [];
 //   console.log('noice!\n');
 // }
 
-// let as = new Character('test', 123);
-// as.addItem('bow','a bow')
-// as.addItem('bow2','another bow')
-// console.log(as);
+let as = new Character('test',123);
+
+as.addItem('bow','a bow');
+saveCharacter(as);
+loadCharacter({author:{id:2134}}, 'test')
+as.addItem('bow2','another bow');
+
+console.log(as);
 
 
 client.login(token);
@@ -45,7 +38,14 @@ client.once('ready', () => {
   console.log("And she's hard at work!");
 });
 
-function storeCharacter (characterObject) {
+function loadCharacter (message, name) {
+  if (!name) return undefined;
+  const filePath = `./users/${message.author.id}/${name}.json`;
+  if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
+  return Flatted.parse(fs.readFileSync(filePath));
+}
+
+function saveCharacter (characterObject) {
   const filePath = `./users/${characterObject.userId}`;
   if (fs.existsSync(filePath)) {
     fs.open(`${filePath}/${characterObject.name}.json`, 'w', (err, file) => {
@@ -111,7 +111,7 @@ client.on('message', message => {
         break;
 
       case 'save':
-        storeCharacter(players.find( player => {return player.userId == discordId}));
+        saveCharacter(players.find( player => {return player.userId == discordId}));
         message.channel.send('Your character has been saved.');
         break;
 
