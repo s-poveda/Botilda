@@ -1,17 +1,24 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const fs = require('fs');
 const { token } = require('./auth.json');
 const Character = require('./characters/');
-const fs = require('fs');
-const Flatted = require('flatted');
 const prefix = '-';
-const { noCharacterFoundMessage, helpMessage, newCharacterCreatedMessage, partyOfZeroMessage } = require('./messages.json');
+const {
+  noCharacterFoundMessage,
+  helpMessage,
+  newCharacterCreatedMessage,
+  partyOfZeroMessage
+} = require('./messages.json');
 const itemSeparator = / & /;
 
-
-
+//set by the DM
 let numberOfPlayers = 0;
+
+// fills up as players use '-roll'
 let responses = [];
+
+// who is in the current party
 let players = [];
 
 // let thing = JSON.parse(fs.readFileSync('auth.json', callback));
@@ -20,45 +27,52 @@ let players = [];
 //   console.log('noice!\n');
 // }
 
-let as = new Character('test',123);
+// let as = new Character('test',123);
+//
+// as.addItem('bow','a bow');
+// saveCharacter(as);
+// loadCharacter({author:{id:2134}}, 'test');
+// as.addItem('bow2','another bow');
+// console.log(as);
 
-as.addItem('bow','a bow');
-saveCharacter(as);
-loadCharacter({author:{id:2134}}, 'test')
-as.addItem('bow2','another bow');
-
-console.log(as);
 
 
 client.login(token);
 console.log('Matilda got out of bed!');
 
-client.once('ready', () => {
-
-  console.log("And she's hard at work!");
-});
+client.once('ready', () => { console.log("And she's hard at work!") });
 
 function loadCharacter (message, name) {
   if (!name) return undefined;
   const filePath = `./users/${message.author.id}/${name}.json`;
   if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
-  return Flatted.parse(fs.readFileSync(filePath));
+  console.log(fs.readFileSync(filePath));
+  console.trace(`---------------------\nloading ${name}`);
+  return JSON.parse(fs.readFileSync(filePath), (key, value) => {
+    console.log(`${key} : ${value}`);
+    return value;
+  });
 }
 
-function saveCharacter (characterObject) {
-  const filePath = `./users/${characterObject.userId}`;
-  if (fs.existsSync(filePath)) {
-    fs.open(`${filePath}/${characterObject.name}.json`, 'w', (err, file) => {
+function saveCharacter (characterObject, message) {
+  const dirPath = `./users/${characterObject.userId}`;
+  console.log(`saving ${characterObject.userId} ====== ${characterObject.name}`);
+  if (fs.existsSync(dirPath)) {
+    console.trace('---------------------\nPrevious files existed');
+    fs.open(`${dirPath}/${characterObject.name}.json`, 'w', (err, file) => {
       if (err) throw err;
-      fs.writeFileSync(file, JSON.stringify(characterObject));
+      fs.writeFileSync(file, JSON.stringify(characterObject, (key, value) => {
+        console.log('Finished saving');
+      }));
       fs.close( file, err => {
         if (err) throw err;
       });
     });
   }
   else {
-    fs.mkdirSync(filePath);
-    fs.open(`${filePath}/${characterObject.name}.json`, 'w', (err, file) => {
+    console.trace('---------------------\nNew User');
+    fs.mkdirSync(dirPath);
+    fs.open(`${dirPath}/${characterObject.name}.json`, 'w', (err, file) => {
       if (err) throw err;
       fs.writeFileSync(file, JSON.stringify(characterObject));
 
@@ -96,16 +110,17 @@ client.on('message', message => {
   const discordId = message.author.id;
   if (message.content.startsWith(prefix) ) {
 
-    //if character hasn't been made, returns undefined.
-    let currentCharacter = players.find( char => {return char.userId == discordId});
-
+    //checks if character is in the party and returns the object or undefined
+    let currentCharacter
+    try { currentCharacter = players.find( char => {return char.userId == discordId}); }
+    catch { currentCharacter = false }
     //takes full message string and makes array with the words
     const cmds = message.content.toLowerCase().trim().substr(1).split(' ');
     switch (cmds[0]) {
 
       case 'load':
           currentCharacter = loadCharacter(message, cmds[1]);
-          if (!currentCharacter) return message.channel.send('Please provide a name.');
+          if (!cmds[1]) return message.channel.send('Please provide a name.');
           players.push(currentCharacter);
           if (currentCharacter) return message.channel.send(`<@${discordId}> ${currentCharacter.name} has been loaded.`);
         break;
