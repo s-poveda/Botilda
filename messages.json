@@ -1,9 +1,10 @@
 {
-"noCharacterFoundMessage":"No character found. Please make one with \"-newchar [name of your character]\"",
+"noCharacterFoundMessage":"No character found. Please make one with \"-newchar [name of your character]\" or load a previous one with \"-load [name of your character]",
 
 "helpMessage":"Dungeon Master:\nTo begin, type \"-partysize [number of party members]\"\n\nTo request a check, type \"-roll [name of the check]\"\nTo see the ---------------------------------------------\nParty Members:\nAdd items to your inventory by typing \"-additem [name of your item] + [description]\" (WIP)\nRemove items from your inventory (WIP)\n\nOnce the DM has set the party size, type\"-newchar [Name of your character]\" to create a new character, or \"-load [Name of your character]\" to load a previous character\nOnce the DM asks for a roll, submit your roll by typing \"-roll [your total for the roll]\"",
 
 "newCharacterCreatedMessage":"A new character has been created. You've been automatically added to the active players",
 
-"partyOfZeroMessage":"You have not set the party size using \"-partysize [number of people in the party]\""
+"partyOfZeroMessage":"You have not set the party size using \"-partysize [number of people in the party]\"",
+"noItemsInInventoryMessage":"There are no items in your inventory."
 }

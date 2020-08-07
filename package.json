@@ -16,5 +16,9 @@
     "discord.js": "^12.1.1",
     "flatted": "^3.0.2",
     "nodemon": "^2.0.4"
+  },
+  "nodemonConfig": {
+    "ignore": ["users/*"],
+    "delay": "2500"
   }
 }

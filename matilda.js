@@ -4,13 +4,14 @@ const fs = require('fs');
 const { token } = require('./auth.json');
 const { Character, revitilize } = require('./characters/');
 const prefix = '-';
+const itemSeparator = / & /;
 const {
   noCharacterFoundMessage,
   helpMessage,
   newCharacterCreatedMessage,
-  partyOfZeroMessage
+  partyOfZeroMessage,
+  noItemsInInventoryMessage
 } = require('./messages.json');
-const itemSeparator = / & /;
 
 //set by the DM
 let numberOfPlayers = 0;
@@ -58,11 +59,11 @@ function loadCharacter (message, name) {
   return loadedChar;
 }
 
-function saveCharacter (characterObject, message) {
+function saveCharacter (characterObject) {
   const dirPath = `./users/${characterObject.userId}`;
   console.log(`saving ${characterObject.userId} ====== ${characterObject.name}`);
   if (fs.existsSync(dirPath)) {
-    console.trace('---------------------\n--------------------- Previous files existed ------------------------');
+    console.log(`--------------------- Previous files existed at ${dirPath} ------------------------`);
     fs.open(`${dirPath}/${characterObject.name}.json`, 'w', (err, file) => {
       if (err) throw err;
       fs.writeFileSync(file, JSON.stringify(characterObject));
@@ -117,9 +118,7 @@ client.on('message', message => {
   if (message.content.startsWith(prefix) ) {
 
     //checks if character is in the party and returns the object or undefined
-    let currentCharacter
-    try { currentCharacter = players.find( char => {return char.userId == discordId}); }
-    catch { currentCharacter = false }
+    let currentCharacter = players.find( char => {return char.userId == discordId});
     //takes full message string and makes array with the words
     const cmds = message.content.toLowerCase().trim().substr(1).split(' ');
     switch (cmds[0]) {
@@ -242,7 +241,7 @@ client.on('message', message => {
       break;
 
     case 'additem':
-      if (!cmds[1]) return message.channel.send(`Please give the name followed by `);
+      if (!cmds[1]) return message.channel.send(`Please give the name and description separated by "&&"`);
 
       if (!currentCharacter) return message.channel.send(noCharacterFoundMessage);
 
@@ -264,14 +263,22 @@ client.on('message', message => {
       break;
 
     case 'removeitem':
-      if (!currentCharacter) return message.channel.send(`<@${discordId}> You have not made a character. Use "-newchar [name of your character]" to create one`);
-      if (currentCharacter.items.length == 0) return message.author.send('There are no items in your inventory.');
+      if (!currentCharacter) return message.channel.send(`<@${discordId}> ${noCharacterFoundMessage}`);
+      if (currentCharacter.items.length == 0) return message.author.send(`<@${discordId}> ${noItemsInInventoryMessage}`);
       if (!cmds[1]) return message.channel.send('Please provide the name of the item you want to remove.')
 
       //deletes '-removeitem' and lingering spaces from message content
-      message.content = message.content.substring(cmds[0].length + 1).trim();
+      itemName = message.content.substring(cmds[0].length + 1).trim();
 
-      console.log(currentCharacter.findIndex( item => {return item.name == message.content}) );
+      const previousItemListLength = currentCharacter.items.length;
+      currentCharacter.removeItem(itemName);
+
+      if (previousItemListLength > currentCharacter.items.length) {
+        message.channel.send(`Item removed successfully: ${itemName}`);
+      } else {
+        message.channel.send(`No changes were made: ${itemName} not found.\nCheck your inventory. Do you have the item? Did you misspell it?`);
+      }
+      // console.log(currentCharacter.Items.findIndex( item => {return item.name == itemName}) );
 
 
       // TODO: remove items. add removeItems method to character class

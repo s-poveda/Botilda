@@ -1,8 +1,7 @@
 const Item = require('./itemClass.js');
 
-function removeItem (name = null) {
-  if (!name) return;
-  this.items.findIndex()
+function removeItem (itemName) {
+  this.items = this.items.filter( item => item.name !== itemName);
 }
 
 function addItem (name, description = 'no description.') {
