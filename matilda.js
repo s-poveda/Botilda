@@ -292,8 +292,7 @@ client.on('message', message => {
 **Duration**: ${searchResult.duration}
 **Concentration**: ${searchResult.concentration? 'Yes': 'No'}
 **Casting Time**: ${searchResult.casting_time}
-**Level**: ${searchResult.level}
-
+**Level**: ${searchResult.level}\n
 **Description**: ${searchResult.desc.join('\n')}`
           )
         }
