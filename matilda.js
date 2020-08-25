@@ -33,8 +33,10 @@ client.once('ready', () => { console.log("And she's hard at work!\n") });
 function loadCharacter (message, name) {
   if (!name) return null;
   const filePath = `./users/${message.author.id}/${name}.json`;
-  if (!fs.existsSync(filePath))  return noCharacterFoundMessage;
+  console.log(filePath);
+  if (!fs.existsSync(filePath))  return null;
   console.trace(`---------------------\nLOADING ${name.toUpperCase()}`);
+  console.log(fs.readFileSync(filePath))
   const loadedChar = JSON.parse(fs.readFileSync(filePath));
 
   //puts methods back
@@ -79,11 +81,9 @@ console.createCollapsable = (subject, content) => {
   //if content is falsy
   content = content? content:'Nothing found';
 
-  console.groupCollapsed();
-    console.log(`\n--------------------Start of ${subject}-----------------------`);
+  console.groupCollapsed(`\n--------------------Start of ${subject}-----------------------`);
     console.log(content);
-    console.log(`--------------------End of ${subject}-----------------------\n`);
-  console.groupEnd();
+  console.groupEnd(`--------------------End of ${subject}-----------------------\n`);
 };
 
 function getRoleId (message, roleToFind) {
@@ -108,10 +108,15 @@ client.on('message', message => {
 
       case 'load':
       case 'l':
-          currentCharacter = loadCharacter(message, cmds[1]);
+          currentCharacter = loadCharacter(message, cmds[1])
+          console.log(currentCharacter);
           if (!cmds[1]) return message.channel.send('Please provide a name.');
-          players.push(currentCharacter);
-          if (currentCharacter) return message.channel.send(`<@${discordId}> ${currentCharacter.name} has been loaded and added to the party`);
+          if (currentCharacter &&  typeof currentCharacter === 'object') {
+            players.push(currentCharacter);
+            return message.channel.send(`<@${discordId}> ${currentCharacter.name} has been loaded and added to the party`);
+          } else {
+            message.channel.send(`<@${message.author.id}> Couldn't load character`)
+          }
         break;
 
       case 'save':
@@ -152,22 +157,31 @@ client.on('message', message => {
       break;
 
       case 'info':
-        message.channel.send('**info is displayed in terminal**')
+        message.channel.send(
+`					**The Party**
+${players.reduce((message, player) => {
+	message += `${message}*${player.name}*	======	<@${player.userId}>\n`
+	return message.trim();
+}, '')
+}
+**more info is displayed in terminal**`)
+
         try {
+					//drops '-info' from the array and turns the rest into
           cmds.shift();
           let roleToFind = cmds.reduce((roleName, word) => {
             roleName = `${roleName} ${word} `;
             return roleName.trim();
-          });
+          }, '');
           console.log(`"${roleToFind}" ID: ${getRoleId(message, roleToFind)}`);
         }
         catch (err){
+					console.log(err, '\n');
           console.log(`no role to find was requested.`);
-          console.log(err, '\n');
         }
         console.log(`your discord ID: ${discordId}.`);
         console.log(`commands: ${cmds.join(' ')}`);
-        console.createCollapsable('Active Players',players);
+        console.createCollapsable('Active Players', players);
         console.createCollapsable('Your character', currentCharacter);
       break;
 
@@ -211,12 +225,6 @@ client.on('message', message => {
       message.channel.send(`Responses have been reset!`);
     break;
 
-    case 'send':
-    //makes bot send the message
-      cmds.shift();
-      message.channel.send(`${cmds.reduce((a,b) => {a=`${a} ${b} `; return a.trim(); }) }`);
-    break;
-
     case 'inventory':
     case 'i':
       if (!currentCharacter) return message.channel.send(`<@${discordId}> ${noCharacterFoundMessage}`);
@@ -252,6 +260,7 @@ client.on('message', message => {
       break;
 
     case 'removeitem':
+		case 'rmi':
       if (!currentCharacter) return message.channel.send(`<@${discordId}> ${noCharacterFoundMessage}`);
       if (currentCharacter.items.length == 0) return message.author.send(`<@${discordId}> ${noItemsInInventoryMessage}`);
       if (!cmds[1]) return message.channel.send('Please provide the name of the item you want to remove.')
@@ -277,9 +286,8 @@ client.on('message', message => {
       });
       let spellName = message.content.substring(cmds[0].length + 1).trim();
       spellSearch(spellName,
-        //callback on Zero results
-        (searchResult) => {
-          console.log(searchResult);
+        (zeroResults) => {
+          console.log('No results found.');
           spellSearchChannel.send(dnd5ApiMessages.noSpellFound);
         },
         (searchResult) => {

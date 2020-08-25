@@ -10,7 +10,7 @@ const spellSearch = async (nameToSearch, callBackOnZeroResults, callBackOnOneRes
           searchResult = res.data;
           callBackOnOneResult(searchResult);
     },  e => {
-          console.log('There was an error:\n', e);
+          console.log('No results', e);
           callBackOnZeroResults(searchResult);
         }
 
