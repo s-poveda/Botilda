@@ -2,8 +2,9 @@
 auth.json
 users/*
 
-#linter configuration
+#linter and ide configuration
 .eslintrc.json
+.vs
 
 #modules
 node_modules/

@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "characters": "file:../../customModules/characters",
     "discord.js": "^12.1.1",
     "flatted": "^3.0.2",
     "nodemon": "^2.0.4"
