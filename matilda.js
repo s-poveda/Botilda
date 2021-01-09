@@ -145,13 +145,17 @@ client.on('message', message => {
       break;
 
       case 'newchar':
-        if (!players.some((player) => player.userId == discordId) && message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party')) ) {
+				const inTheParty = players.some((player) => player.userId == discordId);
+				const hasPartyRole = message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party'));
+        if (!inTheParty && hasPartyRole ) {
           let newPlayer = new Character(cmds[1], discordId);
           players.push(newPlayer);
           console.log(`<@${discordId}> added to the active players`);
           console.log(players);
           message.channel.send(`<@${discordId}> ${newCharacterCreatedMessage}`);
-        } else {
+        } else if (!hasPartyRole) {
+					message.channel.send(`<@${discordId}> You must have "the pary" role to create a character`);
+				} else {
           message.channel.send(`<@${discordId}> you have been added to the active party already.`);
         }
       break;
