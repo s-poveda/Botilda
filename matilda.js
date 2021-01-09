@@ -14,7 +14,7 @@ const {
 } = require('./messages.json');
 const spellSearch = require('./Dnd5Api/SpellSearch.js');
 const prefix = '-';
-const itemSeparator = / & /;
+const itemSeparator = / && /;
 
 //set by the DM
 let numberOfPlayers = 0;
@@ -202,7 +202,8 @@ ${players.reduce((message, player) => {
         }
         if (message.member.roles.cache.some(role=>role.name.toLowerCase() == ('the party')) ) {
             try {
-              currentCharacter.roll = cmds[1];
+							currentCharacter.roll = parseInt(cmds[1]);
+							if (isNaN(currentCharacter.roll)) return message.channel.send(`<@${message.author.id}> You must provide an integer number for your roll`);
               responses.push(currentCharacter);
               console.createCollapsable(`Responses`, responses);
               if (responses.length >= numberOfPlayers) {
