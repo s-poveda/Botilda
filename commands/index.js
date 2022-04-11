@@ -1,9 +1,11 @@
 const 
     fs = require('node:fs')
     commandFiles = fs
-        .readdirSync("./commands")
-        .filter((file) => file.endsWith(".js"));
+        .readdirSync(__dirname)
+        .filter((file) => file.endsWith(".c.js"));
 
 module.exports = {
-  register_slash_commands: () => {},
+  register_slash_commands: () => {
+      
+  },
 };
