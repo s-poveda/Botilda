@@ -1,7 +1,12 @@
 require('dotenv').config();
 const
-  Discord = require('discord.js');
-  client = new Discord.Client(),
+  { Client, Intents } = require('discord.js');
+  client = new Client({
+    intents: (()=>{
+      const allIntents = new Intents();
+      allIntents.add(Intents.FLAGS.GUILDS);
+      return allIntents;
+  })()}),
   fs = require('node:fs'),
   { LOGIN_TOKEN } = process.env,
   { Character, revitilize } = require('./characters/'),
