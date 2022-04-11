@@ -1,6 +1,7 @@
-#authentication files
+#no-no files
 auth.json
 users/*
+.env
 
 #linter and ide configuration
 .eslintrc.json
