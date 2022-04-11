@@ -1,20 +1,24 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const fs = require('fs');
-const { token } = require('./auth.json');
-const { Character, revitilize } = require('./characters/');
-const {
-  noCharacterFoundMessage,
-  helpMessage,
-  newCharacterCreatedMessage,
-  partyOfZeroMessage,
-  noItemsInInventoryMessage,
-  alreadyHaveItem,
-  dnd5ApiMessages
-} = require('./messages.json');
-const spellSearch = require('./Dnd5Api/SpellSearch.js');
-const prefix = '-';
-const itemSeparator = / && /;
+require('dotenv').config();
+const
+  Discord = require('discord.js');
+  client = new Discord.Client(),
+  fs = require('node:fs'),
+  { LOGIN_TOKEN } = process.env,
+  { Character, revitilize } = require('./characters/'),
+  {
+    noCharacterFoundMessage,
+    helpMessage,
+    newCharacterCreatedMessage,
+    partyOfZeroMessage,
+    noItemsInInventoryMessage,
+    alreadyHaveItem,
+    dnd5ApiMessages,
+
+  } = require('./messages.json'),
+  spellSearch = require('./Dnd5Api/SpellSearch.js'),
+  { register_slash_commands } = require('./commands/index.js'),
+  prefix = '-',
+  itemSeparator = / && /;
 
 //set by the DM
 let numberOfPlayers = 0;
@@ -25,8 +29,10 @@ let responses = [];
 // who is in the current party
 let players = [];
 
-client.login(token);
+client.login(LOGIN_TOKEN);
 console.log('Matilda got out of bed!');
+
+register_slash_commands();
 
 client.once('ready', () => { console.log("And she's hard at work!\n") });
 
